@@ -1,0 +1,264 @@
+<html>
+<head>
+<title>testapp.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+testapp.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">&quot;&quot;&quot;A small application that can be used to test a WSGI server and check 
+<a name="l2"><span class="ln">2    </span></a>it for WSGI compliance. 
+<a name="l3"><span class="ln">3    </span></a>&quot;&quot;&quot;</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s2">import </span><span class="s1">base64</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s2">import </span><span class="s1">os</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s2">import </span><span class="s1">sys</span>
+<a name="l7"><span class="ln">7    </span></a><span class="s2">import </span><span class="s1">typing </span><span class="s2">as </span><span class="s1">t</span>
+<a name="l8"><span class="ln">8    </span></a><span class="s2">from </span><span class="s1">textwrap </span><span class="s2">import </span><span class="s1">wrap</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a><span class="s2">from </span><span class="s1">markupsafe </span><span class="s2">import </span><span class="s1">escape</span>
+<a name="l11"><span class="ln">11   </span></a>
+<a name="l12"><span class="ln">12   </span></a><span class="s2">from </span><span class="s1">. </span><span class="s2">import </span><span class="s1">__version__ </span><span class="s2">as </span><span class="s1">_werkzeug_version</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s2">from </span><span class="s1">.wrappers.request </span><span class="s2">import </span><span class="s1">Request</span>
+<a name="l14"><span class="ln">14   </span></a><span class="s2">from </span><span class="s1">.wrappers.response </span><span class="s2">import </span><span class="s1">Response</span>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a><span class="s2">if </span><span class="s1">t.TYPE_CHECKING:</span>
+<a name="l17"><span class="ln">17   </span></a>    <span class="s2">from </span><span class="s1">_typeshed.wsgi </span><span class="s2">import </span><span class="s1">StartResponse</span>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s2">from </span><span class="s1">_typeshed.wsgi </span><span class="s2">import </span><span class="s1">WSGIEnvironment</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a><span class="s1">logo = Response(</span>
+<a name="l22"><span class="ln">22   </span></a>    <span class="s1">base64.b64decode(</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s3">&quot;&quot;&quot; 
+<a name="l24"><span class="ln">24   </span></a>R0lGODlhoACgAOMIAAEDACwpAEpCAGdgAJaKAM28AOnVAP3rAP///////// 
+<a name="l25"><span class="ln">25   </span></a>//////////////////////yH5BAEKAAgALAAAAACgAKAAAAT+EMlJq704680R+F0ojmRpnuj0rWnrv 
+<a name="l26"><span class="ln">26   </span></a>nB8rbRs33gu0bzu/0AObxgsGn3D5HHJbCUFyqZ0ukkSDlAidctNFg7gbI9LZlrBaHGtzAae0eloe25 
+<a name="l27"><span class="ln">27   </span></a>7w9EDOX2fst/xenyCIn5/gFqDiVVDV4aGeYiKkhSFjnCQY5OTlZaXgZp8nJ2ekaB0SQOjqphrpnOiq 
+<a name="l28"><span class="ln">28   </span></a>ncEn65UsLGytLVmQ6m4sQazpbtLqL/HwpnER8bHyLrLOc3Oz8PRONPU1crXN9na263dMt/g4SzjMeX 
+<a name="l29"><span class="ln">29   </span></a>m5yDpLqgG7OzJ4u8lT/P69ej3JPn69kHzN2OIAHkB9RUYSFCFQYQJFTIkCDBiwoXWGnowaLEjRm7+G 
+<a name="l30"><span class="ln">30   </span></a>p9A7Hhx4rUkAUaSLJlxHMqVMD/aSycSZkyTplCqtGnRAM5NQ1Ly5OmzZc6gO4d6DGAUKA+hSocWYAo 
+<a name="l31"><span class="ln">31   </span></a>SlM6oUWX2O/o0KdaVU5vuSQLAa0ADwQgMEMB2AIECZhVSnTno6spgbtXmHcBUrQACcc2FrTrWS8wAf 
+<a name="l32"><span class="ln">32   </span></a>78cMFBgwIBgbN+qvTt3ayikRBk7BoyGAGABAdYyfdzRQGV3l4coxrqQ84GpUBmrdR3xNIDUPAKDBSA 
+<a name="l33"><span class="ln">33   </span></a>ADIGDhhqTZIWaDcrVX8EsbNzbkvCOxG8bN5w8ly9H8jyTJHC6DFndQydbguh2e/ctZJFXRxMAqqPVA 
+<a name="l34"><span class="ln">34   </span></a>tQH5E64SPr1f0zz7sQYjAHg0In+JQ11+N2B0XXBeeYZgBZFx4tqBToiTCPv0YBgQv8JqA6BEf6RhXx 
+<a name="l35"><span class="ln">35   </span></a>w1ENhRBnWV8ctEX4Ul2zc3aVGcQNC2KElyTDYyYUWvShdjDyMOGMuFjqnII45aogPhz/CodUHFwaDx 
+<a name="l36"><span class="ln">36   </span></a>lTgsaOjNyhGWJQd+lFoAGk8ObghI0kawg+EV5blH3dr+digkYuAGSaQZFHFz2P/cTaLmhF52QeSb45 
+<a name="l37"><span class="ln">37   </span></a>Jwxd+uSVGHlqOZpOeJpCFZ5J+rkAkFjQ0N1tah7JJSZUFNsrkeJUJMIBi8jyaEKIhKPomnC91Uo+NB 
+<a name="l38"><span class="ln">38   </span></a>yyaJ5umnnpInIFh4t6ZSpGaAVmizqjpByDegYl8tPE0phCYrhcMWSv+uAqHfgH88ak5UXZmlKLVJhd 
+<a name="l39"><span class="ln">39   </span></a>dj78s1Fxnzo6yUCrV6rrDOkluG+QzCAUTbCwf9SrmMLzK6p+OPHx7DF+bsfMRq7Ec61Av9i6GLw23r 
+<a name="l40"><span class="ln">40   </span></a>idnZ+/OO0a99pbIrJkproCQMA17OPG6suq3cca5ruDfXCCDoS7BEdvmJn5otdqscn+uogRHHXs8cbh 
+<a name="l41"><span class="ln">41   </span></a>EIfYaDY1AkrC0cqwcZpnM6ludx72x0p7Fo/hZAcpJDjax0UdHavMKAbiKltMWCF3xxh9k25N/Viud8 
+<a name="l42"><span class="ln">42   </span></a>ba78iCvUkt+V6BpwMlErmcgc502x+u1nSxJSJP9Mi52awD1V4yB/QHONsnU3L+A/zR4VL/indx/y64 
+<a name="l43"><span class="ln">43   </span></a>gqcj+qgTeweM86f0Qy1QVbvmWH1D9h+alqg254QD8HJXHvjQaGOqEqC22M54PcftZVKVSQG9jhkv7C 
+<a name="l44"><span class="ln">44   </span></a>JyTyDoAJfPdu8v7DRZAxsP/ky9MJ3OL36DJfCFPASC3/aXlfLOOON9vGZZHydGf8LnxYJuuVIbl83y 
+<a name="l45"><span class="ln">45   </span></a>Az5n/RPz07E+9+zw2A2ahz4HxHo9Kt79HTMx1Q7ma7zAzHgHqYH0SoZWyTuOLMiHwSfZDAQTn0ajk9 
+<a name="l46"><span class="ln">46   </span></a>YQqodnUYjByQZhZak9Wu4gYQsMyEpIOAOQKze8CmEF45KuAHTvIDOfHJNipwoHMuGHBnJElUoDmAyX 
+<a name="l47"><span class="ln">47   </span></a>c2Qm/R8Ah/iILCCJOEokGowdhDYc/yoL+vpRGwyVSCWFYZNljkhEirGXsalWcAgOdeAdoXcktF2udb 
+<a name="l48"><span class="ln">48   </span></a>qbUhjWyMQxYO01o6KYKOr6iK3fE4MaS+DsvBsGOBaMb0Y6IxADaJhFICaOLmiWTlDAnY1KzDG4ambL 
+<a name="l49"><span class="ln">49   </span></a>cWBA8mUzjJsN2KjSaSXGqMCVXYpYkj33mcIApyhQf6YqgeNAmNvuC0t4CsDbSshZJkCS1eNisKqlyG 
+<a name="l50"><span class="ln">50   </span></a>cF8G2JeiDX6tO6Mv0SmjCa3MFb0bJaGPMU0X7c8XcpvMaOQmCajwSeY9G0WqbBmKv34DsMIEztU6Y2 
+<a name="l51"><span class="ln">51   </span></a>KiDlFdt6jnCSqx7Dmt6XnqSKaFFHNO5+FmODxMCWBEaco77lNDGXBM0ECYB/+s7nKFdwSF5hgXumQe 
+<a name="l52"><span class="ln">52   </span></a>EZ7amRg39RHy3zIjyRCykQh8Zo2iviRKyTDn/zx6EefptJj2Cw+Ep2FSc01U5ry4KLPYsTyWnVGnvb 
+<a name="l53"><span class="ln">53   </span></a>UpyGlhjBUljyjHhWpf8OFaXwhp9O4T1gU9UeyPPa8A2l0p1kNqPXEVRm1AOs1oAGZU596t6SOR2mcB 
+<a name="l54"><span class="ln">54   </span></a>Oco1srWtkaVrMUzIErrKri85keKqRQYX9VX0/eAUK1hrSu6HMEX3Qh2sCh0q0D2CtnUqS4hj62sE/z 
+<a name="l55"><span class="ln">55   </span></a>aDs2Sg7MBS6xnQeooc2R2tC9YrKpEi9pLXfYXp20tDCpSP8rKlrD4axprb9u1Df5hSbz9QU0cRpfgn 
+<a name="l56"><span class="ln">56   </span></a>kiIzwKucd0wsEHlLpe5yHXuc6FrNelOl7pY2+11kTWx7VpRu97dXA3DO1vbkhcb4zyvERYajQgAADs 
+<a name="l57"><span class="ln">57   </span></a>=&quot;&quot;&quot;</span>
+<a name="l58"><span class="ln">58   </span></a>    <span class="s1">)</span><span class="s2">,</span>
+<a name="l59"><span class="ln">59   </span></a>    <span class="s1">mimetype=</span><span class="s3">&quot;image/png&quot;</span><span class="s2">,</span>
+<a name="l60"><span class="ln">60   </span></a><span class="s1">)</span>
+<a name="l61"><span class="ln">61   </span></a>
+<a name="l62"><span class="ln">62   </span></a>
+<a name="l63"><span class="ln">63   </span></a><span class="s1">TEMPLATE = </span><span class="s3">&quot;&quot;&quot;</span><span class="s2">\ 
+<a name="l64"><span class="ln">64   </span></a></span><span class="s3">&lt;!doctype html&gt; 
+<a name="l65"><span class="ln">65   </span></a>&lt;html lang=en&gt; 
+<a name="l66"><span class="ln">66   </span></a>&lt;title&gt;WSGI Information&lt;/title&gt; 
+<a name="l67"><span class="ln">67   </span></a>&lt;style type=&quot;text/css&quot;&gt; 
+<a name="l68"><span class="ln">68   </span></a>  @import url(https://fonts.googleapis.com/css?family=Ubuntu); 
+<a name="l69"><span class="ln">69   </span></a> 
+<a name="l70"><span class="ln">70   </span></a>  body       { font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 
+<a name="l71"><span class="ln">71   </span></a>               'Verdana', sans-serif; background-color: white; color: #000; 
+<a name="l72"><span class="ln">72   </span></a>               font-size: 15px; text-align: center; } 
+<a name="l73"><span class="ln">73   </span></a>  #logo      { float: right; padding: 0 0 10px 10px; } 
+<a name="l74"><span class="ln">74   </span></a>  div.box    { text-align: left; width: 45em; margin: auto; padding: 50px 0; 
+<a name="l75"><span class="ln">75   </span></a>               background-color: white; } 
+<a name="l76"><span class="ln">76   </span></a>  h1, h2     { font-family: 'Ubuntu', 'Lucida Grande', 'Lucida Sans Unicode', 
+<a name="l77"><span class="ln">77   </span></a>               'Geneva', 'Verdana', sans-serif; font-weight: normal; } 
+<a name="l78"><span class="ln">78   </span></a>  h1         { margin: 0 0 30px 0; } 
+<a name="l79"><span class="ln">79   </span></a>  h2         { font-size: 1.4em; margin: 1em 0 0.5em 0; } 
+<a name="l80"><span class="ln">80   </span></a>  table      { width: 100%%; border-collapse: collapse; border: 1px solid #AFC5C9 } 
+<a name="l81"><span class="ln">81   </span></a>  table th   { background-color: #AFC1C4; color: white; font-size: 0.72em; 
+<a name="l82"><span class="ln">82   </span></a>               font-weight: normal; width: 18em; vertical-align: top; 
+<a name="l83"><span class="ln">83   </span></a>               padding: 0.5em 0 0.1em 0.5em; } 
+<a name="l84"><span class="ln">84   </span></a>  table td   { border: 1px solid #AFC5C9; padding: 0.1em 0 0.1em 0.5em; } 
+<a name="l85"><span class="ln">85   </span></a>  code       { font-family: 'Consolas', 'Monaco', 'Bitstream Vera Sans Mono', 
+<a name="l86"><span class="ln">86   </span></a>               monospace; font-size: 0.7em; } 
+<a name="l87"><span class="ln">87   </span></a>  ul li      { line-height: 1.5em; } 
+<a name="l88"><span class="ln">88   </span></a>  ul.path    { font-size: 0.7em; margin: 0 -30px; padding: 8px 30px; 
+<a name="l89"><span class="ln">89   </span></a>               list-style: none; background: #E8EFF0; } 
+<a name="l90"><span class="ln">90   </span></a>  ul.path li { line-height: 1.6em; } 
+<a name="l91"><span class="ln">91   </span></a>  li.virtual { color: #999; text-decoration: underline; } 
+<a name="l92"><span class="ln">92   </span></a>  li.exp     { background: white; } 
+<a name="l93"><span class="ln">93   </span></a>&lt;/style&gt; 
+<a name="l94"><span class="ln">94   </span></a>&lt;div class=&quot;box&quot;&gt; 
+<a name="l95"><span class="ln">95   </span></a>  &lt;img src=&quot;?resource=logo&quot; id=&quot;logo&quot; alt=&quot;[The Werkzeug Logo]&quot; /&gt; 
+<a name="l96"><span class="ln">96   </span></a>  &lt;h1&gt;WSGI Information&lt;/h1&gt; 
+<a name="l97"><span class="ln">97   </span></a>  &lt;p&gt; 
+<a name="l98"><span class="ln">98   </span></a>    This page displays all available information about the WSGI server and 
+<a name="l99"><span class="ln">99   </span></a>    the underlying Python interpreter. 
+<a name="l100"><span class="ln">100  </span></a>  &lt;h2 id=&quot;python-interpreter&quot;&gt;Python Interpreter&lt;/h2&gt; 
+<a name="l101"><span class="ln">101  </span></a>  &lt;table&gt; 
+<a name="l102"><span class="ln">102  </span></a>    &lt;tr&gt; 
+<a name="l103"><span class="ln">103  </span></a>      &lt;th&gt;Python Version 
+<a name="l104"><span class="ln">104  </span></a>      &lt;td&gt;%(python_version)s 
+<a name="l105"><span class="ln">105  </span></a>    &lt;tr&gt; 
+<a name="l106"><span class="ln">106  </span></a>      &lt;th&gt;Platform 
+<a name="l107"><span class="ln">107  </span></a>      &lt;td&gt;%(platform)s [%(os)s] 
+<a name="l108"><span class="ln">108  </span></a>    &lt;tr&gt; 
+<a name="l109"><span class="ln">109  </span></a>      &lt;th&gt;API Version 
+<a name="l110"><span class="ln">110  </span></a>      &lt;td&gt;%(api_version)s 
+<a name="l111"><span class="ln">111  </span></a>    &lt;tr&gt; 
+<a name="l112"><span class="ln">112  </span></a>      &lt;th&gt;Byteorder 
+<a name="l113"><span class="ln">113  </span></a>      &lt;td&gt;%(byteorder)s 
+<a name="l114"><span class="ln">114  </span></a>    &lt;tr&gt; 
+<a name="l115"><span class="ln">115  </span></a>      &lt;th&gt;Werkzeug Version 
+<a name="l116"><span class="ln">116  </span></a>      &lt;td&gt;%(werkzeug_version)s 
+<a name="l117"><span class="ln">117  </span></a>  &lt;/table&gt; 
+<a name="l118"><span class="ln">118  </span></a>  &lt;h2 id=&quot;wsgi-environment&quot;&gt;WSGI Environment&lt;/h2&gt; 
+<a name="l119"><span class="ln">119  </span></a>  &lt;table&gt;%(wsgi_env)s&lt;/table&gt; 
+<a name="l120"><span class="ln">120  </span></a>  &lt;h2 id=&quot;installed-eggs&quot;&gt;Installed Eggs&lt;/h2&gt; 
+<a name="l121"><span class="ln">121  </span></a>  &lt;p&gt; 
+<a name="l122"><span class="ln">122  </span></a>    The following python packages were installed on the system as 
+<a name="l123"><span class="ln">123  </span></a>    Python eggs: 
+<a name="l124"><span class="ln">124  </span></a>  &lt;ul&gt;%(python_eggs)s&lt;/ul&gt; 
+<a name="l125"><span class="ln">125  </span></a>  &lt;h2 id=&quot;sys-path&quot;&gt;System Path&lt;/h2&gt; 
+<a name="l126"><span class="ln">126  </span></a>  &lt;p&gt; 
+<a name="l127"><span class="ln">127  </span></a>    The following paths are the current contents of the load path.  The 
+<a name="l128"><span class="ln">128  </span></a>    following entries are looked up for Python packages.  Note that not 
+<a name="l129"><span class="ln">129  </span></a>    all items in this path are folders.  Gray and underlined items are 
+<a name="l130"><span class="ln">130  </span></a>    entries pointing to invalid resources or used by custom import hooks 
+<a name="l131"><span class="ln">131  </span></a>    such as the zip importer. 
+<a name="l132"><span class="ln">132  </span></a>  &lt;p&gt; 
+<a name="l133"><span class="ln">133  </span></a>    Items with a bright background were expanded for display from a relative 
+<a name="l134"><span class="ln">134  </span></a>    path.  If you encounter such paths in the output you might want to check 
+<a name="l135"><span class="ln">135  </span></a>    your setup as relative paths are usually problematic in multithreaded 
+<a name="l136"><span class="ln">136  </span></a>    environments. 
+<a name="l137"><span class="ln">137  </span></a>  &lt;ul class=&quot;path&quot;&gt;%(sys_path)s&lt;/ul&gt; 
+<a name="l138"><span class="ln">138  </span></a>&lt;/div&gt; 
+<a name="l139"><span class="ln">139  </span></a>&quot;&quot;&quot;</span>
+<a name="l140"><span class="ln">140  </span></a>
+<a name="l141"><span class="ln">141  </span></a>
+<a name="l142"><span class="ln">142  </span></a><span class="s2">def </span><span class="s1">iter_sys_path() -&gt; t.Iterator[t.Tuple[str</span><span class="s2">, </span><span class="s1">bool</span><span class="s2">, </span><span class="s1">bool]]:</span>
+<a name="l143"><span class="ln">143  </span></a>    <span class="s2">if </span><span class="s1">os.name == </span><span class="s3">&quot;posix&quot;</span><span class="s1">:</span>
+<a name="l144"><span class="ln">144  </span></a>
+<a name="l145"><span class="ln">145  </span></a>        <span class="s2">def </span><span class="s1">strip(x: str) -&gt; str:</span>
+<a name="l146"><span class="ln">146  </span></a>            <span class="s1">prefix = os.path.expanduser(</span><span class="s3">&quot;~&quot;</span><span class="s1">)</span>
+<a name="l147"><span class="ln">147  </span></a>            <span class="s2">if </span><span class="s1">x.startswith(prefix):</span>
+<a name="l148"><span class="ln">148  </span></a>                <span class="s1">x = </span><span class="s3">f&quot;~</span><span class="s2">{</span><span class="s1">x[len(prefix) :]</span><span class="s2">}</span><span class="s3">&quot;</span>
+<a name="l149"><span class="ln">149  </span></a>            <span class="s2">return </span><span class="s1">x</span>
+<a name="l150"><span class="ln">150  </span></a>
+<a name="l151"><span class="ln">151  </span></a>    <span class="s2">else</span><span class="s1">:</span>
+<a name="l152"><span class="ln">152  </span></a>
+<a name="l153"><span class="ln">153  </span></a>        <span class="s2">def </span><span class="s1">strip(x: str) -&gt; str:</span>
+<a name="l154"><span class="ln">154  </span></a>            <span class="s2">return </span><span class="s1">x</span>
+<a name="l155"><span class="ln">155  </span></a>
+<a name="l156"><span class="ln">156  </span></a>    <span class="s1">cwd = os.path.abspath(os.getcwd())</span>
+<a name="l157"><span class="ln">157  </span></a>    <span class="s2">for </span><span class="s1">item </span><span class="s2">in </span><span class="s1">sys.path:</span>
+<a name="l158"><span class="ln">158  </span></a>        <span class="s1">path = os.path.join(cwd</span><span class="s2">, </span><span class="s1">item </span><span class="s2">or </span><span class="s1">os.path.curdir)</span>
+<a name="l159"><span class="ln">159  </span></a>        <span class="s2">yield </span><span class="s1">strip(os.path.normpath(path))</span><span class="s2">, not </span><span class="s1">os.path.isdir(path)</span><span class="s2">, </span><span class="s1">path != item</span>
+<a name="l160"><span class="ln">160  </span></a>
+<a name="l161"><span class="ln">161  </span></a>
+<a name="l162"><span class="ln">162  </span></a><span class="s2">def </span><span class="s1">render_testapp(req: Request) -&gt; bytes:</span>
+<a name="l163"><span class="ln">163  </span></a>    <span class="s2">try</span><span class="s1">:</span>
+<a name="l164"><span class="ln">164  </span></a>        <span class="s2">import </span><span class="s1">pkg_resources</span>
+<a name="l165"><span class="ln">165  </span></a>    <span class="s2">except </span><span class="s1">ImportError:</span>
+<a name="l166"><span class="ln">166  </span></a>        <span class="s1">eggs: t.Iterable[t.Any] = ()</span>
+<a name="l167"><span class="ln">167  </span></a>    <span class="s2">else</span><span class="s1">:</span>
+<a name="l168"><span class="ln">168  </span></a>        <span class="s1">eggs = sorted(</span>
+<a name="l169"><span class="ln">169  </span></a>            <span class="s1">pkg_resources.working_set</span><span class="s2">,</span>
+<a name="l170"><span class="ln">170  </span></a>            <span class="s1">key=</span><span class="s2">lambda </span><span class="s1">x: x.project_name.lower()</span><span class="s2">,  </span><span class="s4"># type: ignore</span>
+<a name="l171"><span class="ln">171  </span></a>        <span class="s1">)</span>
+<a name="l172"><span class="ln">172  </span></a>    <span class="s1">python_eggs = []</span>
+<a name="l173"><span class="ln">173  </span></a>    <span class="s2">for </span><span class="s1">egg </span><span class="s2">in </span><span class="s1">eggs:</span>
+<a name="l174"><span class="ln">174  </span></a>        <span class="s2">try</span><span class="s1">:</span>
+<a name="l175"><span class="ln">175  </span></a>            <span class="s1">version = egg.version</span>
+<a name="l176"><span class="ln">176  </span></a>        <span class="s2">except </span><span class="s1">(ValueError</span><span class="s2">, </span><span class="s1">AttributeError):</span>
+<a name="l177"><span class="ln">177  </span></a>            <span class="s1">version = </span><span class="s3">&quot;unknown&quot;</span>
+<a name="l178"><span class="ln">178  </span></a>        <span class="s1">python_eggs.append(</span>
+<a name="l179"><span class="ln">179  </span></a>            <span class="s3">f&quot;&lt;li&gt;</span><span class="s2">{</span><span class="s1">escape(egg.project_name)</span><span class="s2">} </span><span class="s3">&lt;small&gt;[</span><span class="s2">{</span><span class="s1">escape(version)</span><span class="s2">}</span><span class="s3">]&lt;/small&gt;&quot;</span>
+<a name="l180"><span class="ln">180  </span></a>        <span class="s1">)</span>
+<a name="l181"><span class="ln">181  </span></a>
+<a name="l182"><span class="ln">182  </span></a>    <span class="s1">wsgi_env = []</span>
+<a name="l183"><span class="ln">183  </span></a>    <span class="s1">sorted_environ = sorted(req.environ.items()</span><span class="s2">, </span><span class="s1">key=</span><span class="s2">lambda </span><span class="s1">x: repr(x[</span><span class="s5">0</span><span class="s1">]).lower())</span>
+<a name="l184"><span class="ln">184  </span></a>    <span class="s2">for </span><span class="s1">key</span><span class="s2">, </span><span class="s1">value </span><span class="s2">in </span><span class="s1">sorted_environ:</span>
+<a name="l185"><span class="ln">185  </span></a>        <span class="s1">value = </span><span class="s3">&quot;&quot;</span><span class="s1">.join(wrap(str(escape(repr(value)))))</span>
+<a name="l186"><span class="ln">186  </span></a>        <span class="s1">wsgi_env.append(</span><span class="s3">f&quot;&lt;tr&gt;&lt;th&gt;</span><span class="s2">{</span><span class="s1">escape(key)</span><span class="s2">}</span><span class="s3">&lt;td&gt;&lt;code&gt;</span><span class="s2">{</span><span class="s1">value</span><span class="s2">}</span><span class="s3">&lt;/code&gt;&quot;</span><span class="s1">)</span>
+<a name="l187"><span class="ln">187  </span></a>
+<a name="l188"><span class="ln">188  </span></a>    <span class="s1">sys_path = []</span>
+<a name="l189"><span class="ln">189  </span></a>    <span class="s2">for </span><span class="s1">item</span><span class="s2">, </span><span class="s1">virtual</span><span class="s2">, </span><span class="s1">expanded </span><span class="s2">in </span><span class="s1">iter_sys_path():</span>
+<a name="l190"><span class="ln">190  </span></a>        <span class="s1">class_ = []</span>
+<a name="l191"><span class="ln">191  </span></a>        <span class="s2">if </span><span class="s1">virtual:</span>
+<a name="l192"><span class="ln">192  </span></a>            <span class="s1">class_.append(</span><span class="s3">&quot;virtual&quot;</span><span class="s1">)</span>
+<a name="l193"><span class="ln">193  </span></a>        <span class="s2">if </span><span class="s1">expanded:</span>
+<a name="l194"><span class="ln">194  </span></a>            <span class="s1">class_.append(</span><span class="s3">&quot;exp&quot;</span><span class="s1">)</span>
+<a name="l195"><span class="ln">195  </span></a>        <span class="s1">class_ = </span><span class="s3">f' class=&quot;</span><span class="s2">{</span><span class="s3">&quot; &quot;</span><span class="s1">.join(class_)</span><span class="s2">}</span><span class="s3">&quot;' </span><span class="s2">if </span><span class="s1">class_ </span><span class="s2">else </span><span class="s3">&quot;&quot;</span>
+<a name="l196"><span class="ln">196  </span></a>        <span class="s1">sys_path.append(</span><span class="s3">f&quot;&lt;li</span><span class="s2">{</span><span class="s1">class_</span><span class="s2">}</span><span class="s3">&gt;</span><span class="s2">{</span><span class="s1">escape(item)</span><span class="s2">}</span><span class="s3">&quot;</span><span class="s1">)</span>
+<a name="l197"><span class="ln">197  </span></a>
+<a name="l198"><span class="ln">198  </span></a>    <span class="s2">return </span><span class="s1">(</span>
+<a name="l199"><span class="ln">199  </span></a>        <span class="s1">TEMPLATE</span>
+<a name="l200"><span class="ln">200  </span></a>        <span class="s1">% {</span>
+<a name="l201"><span class="ln">201  </span></a>            <span class="s3">&quot;python_version&quot;</span><span class="s1">: </span><span class="s3">&quot;&lt;br&gt;&quot;</span><span class="s1">.join(escape(sys.version).splitlines())</span><span class="s2">,</span>
+<a name="l202"><span class="ln">202  </span></a>            <span class="s3">&quot;platform&quot;</span><span class="s1">: escape(sys.platform)</span><span class="s2">,</span>
+<a name="l203"><span class="ln">203  </span></a>            <span class="s3">&quot;os&quot;</span><span class="s1">: escape(os.name)</span><span class="s2">,</span>
+<a name="l204"><span class="ln">204  </span></a>            <span class="s3">&quot;api_version&quot;</span><span class="s1">: sys.api_version</span><span class="s2">,</span>
+<a name="l205"><span class="ln">205  </span></a>            <span class="s3">&quot;byteorder&quot;</span><span class="s1">: sys.byteorder</span><span class="s2">,</span>
+<a name="l206"><span class="ln">206  </span></a>            <span class="s3">&quot;werkzeug_version&quot;</span><span class="s1">: _werkzeug_version</span><span class="s2">,</span>
+<a name="l207"><span class="ln">207  </span></a>            <span class="s3">&quot;python_eggs&quot;</span><span class="s1">: </span><span class="s3">&quot;</span><span class="s2">\n</span><span class="s3">&quot;</span><span class="s1">.join(python_eggs)</span><span class="s2">,</span>
+<a name="l208"><span class="ln">208  </span></a>            <span class="s3">&quot;wsgi_env&quot;</span><span class="s1">: </span><span class="s3">&quot;</span><span class="s2">\n</span><span class="s3">&quot;</span><span class="s1">.join(wsgi_env)</span><span class="s2">,</span>
+<a name="l209"><span class="ln">209  </span></a>            <span class="s3">&quot;sys_path&quot;</span><span class="s1">: </span><span class="s3">&quot;</span><span class="s2">\n</span><span class="s3">&quot;</span><span class="s1">.join(sys_path)</span><span class="s2">,</span>
+<a name="l210"><span class="ln">210  </span></a>        <span class="s1">}</span>
+<a name="l211"><span class="ln">211  </span></a>    <span class="s1">).encode(</span><span class="s3">&quot;utf-8&quot;</span><span class="s1">)</span>
+<a name="l212"><span class="ln">212  </span></a>
+<a name="l213"><span class="ln">213  </span></a>
+<a name="l214"><span class="ln">214  </span></a><span class="s2">def </span><span class="s1">test_app(</span>
+<a name="l215"><span class="ln">215  </span></a>    <span class="s1">environ: </span><span class="s3">&quot;WSGIEnvironment&quot;</span><span class="s2">, </span><span class="s1">start_response: </span><span class="s3">&quot;StartResponse&quot;</span>
+<a name="l216"><span class="ln">216  </span></a><span class="s1">) -&gt; t.Iterable[bytes]:</span>
+<a name="l217"><span class="ln">217  </span></a>    <span class="s0">&quot;&quot;&quot;Simple test application that dumps the environment.  You can use 
+<a name="l218"><span class="ln">218  </span></a>    it to check if Werkzeug is working properly: 
+<a name="l219"><span class="ln">219  </span></a> 
+<a name="l220"><span class="ln">220  </span></a>    .. sourcecode:: pycon 
+<a name="l221"><span class="ln">221  </span></a> 
+<a name="l222"><span class="ln">222  </span></a>        &gt;&gt;&gt; from werkzeug.serving import run_simple 
+<a name="l223"><span class="ln">223  </span></a>        &gt;&gt;&gt; from werkzeug.testapp import test_app 
+<a name="l224"><span class="ln">224  </span></a>        &gt;&gt;&gt; run_simple('localhost', 3000, test_app) 
+<a name="l225"><span class="ln">225  </span></a>         * Running on http://localhost:3000/ 
+<a name="l226"><span class="ln">226  </span></a> 
+<a name="l227"><span class="ln">227  </span></a>    The application displays important information from the WSGI environment, 
+<a name="l228"><span class="ln">228  </span></a>    the Python interpreter and the installed libraries. 
+<a name="l229"><span class="ln">229  </span></a>    &quot;&quot;&quot;</span>
+<a name="l230"><span class="ln">230  </span></a>    <span class="s1">req = Request(environ</span><span class="s2">, </span><span class="s1">populate_request=</span><span class="s2">False</span><span class="s1">)</span>
+<a name="l231"><span class="ln">231  </span></a>    <span class="s2">if </span><span class="s1">req.args.get(</span><span class="s3">&quot;resource&quot;</span><span class="s1">) == </span><span class="s3">&quot;logo&quot;</span><span class="s1">:</span>
+<a name="l232"><span class="ln">232  </span></a>        <span class="s1">response = logo</span>
+<a name="l233"><span class="ln">233  </span></a>    <span class="s2">else</span><span class="s1">:</span>
+<a name="l234"><span class="ln">234  </span></a>        <span class="s1">response = Response(render_testapp(req)</span><span class="s2">, </span><span class="s1">mimetype=</span><span class="s3">&quot;text/html&quot;</span><span class="s1">)</span>
+<a name="l235"><span class="ln">235  </span></a>    <span class="s2">return </span><span class="s1">response(environ</span><span class="s2">, </span><span class="s1">start_response)</span>
+<a name="l236"><span class="ln">236  </span></a>
+<a name="l237"><span class="ln">237  </span></a>
+<a name="l238"><span class="ln">238  </span></a><span class="s2">if </span><span class="s1">__name__ == </span><span class="s3">&quot;__main__&quot;</span><span class="s1">:</span>
+<a name="l239"><span class="ln">239  </span></a>    <span class="s2">from </span><span class="s1">.serving </span><span class="s2">import </span><span class="s1">run_simple</span>
+<a name="l240"><span class="ln">240  </span></a>
+<a name="l241"><span class="ln">241  </span></a>    <span class="s1">run_simple(</span><span class="s3">&quot;localhost&quot;</span><span class="s2">, </span><span class="s5">5000</span><span class="s2">, </span><span class="s1">test_app</span><span class="s2">, </span><span class="s1">use_reloader=</span><span class="s2">True</span><span class="s1">)</span>
+<a name="l242"><span class="ln">242  </span></a></pre>
+</body>
+</html>

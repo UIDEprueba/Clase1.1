@@ -1,0 +1,52 @@
+<html>
+<head>
+<title>logging.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+logging.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">sys</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">import </span><span class="s1">logging</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">import </span><span class="s1">distutils.log</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">from </span><span class="s1">. </span><span class="s0">import </span><span class="s1">monkey</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a>
+<a name="l7"><span class="ln">7    </span></a><span class="s0">def </span><span class="s1">_not_warning(record):</span>
+<a name="l8"><span class="ln">8    </span></a>    <span class="s0">return </span><span class="s1">record.levelno &lt; logging.WARNING</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">def </span><span class="s1">configure():</span>
+<a name="l12"><span class="ln">12   </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l13"><span class="ln">13   </span></a>    Configure logging to emit warning and above to stderr 
+<a name="l14"><span class="ln">14   </span></a>    and everything else to stdout. This behavior is provided 
+<a name="l15"><span class="ln">15   </span></a>    for compatibilty with distutils.log but may change in 
+<a name="l16"><span class="ln">16   </span></a>    the future. 
+<a name="l17"><span class="ln">17   </span></a>    &quot;&quot;&quot;</span>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s1">err_handler = logging.StreamHandler()</span>
+<a name="l19"><span class="ln">19   </span></a>    <span class="s1">err_handler.setLevel(logging.WARNING)</span>
+<a name="l20"><span class="ln">20   </span></a>    <span class="s1">out_handler = logging.StreamHandler(sys.stdout)</span>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s1">out_handler.addFilter(_not_warning)</span>
+<a name="l22"><span class="ln">22   </span></a>    <span class="s1">handlers = err_handler</span><span class="s0">, </span><span class="s1">out_handler</span>
+<a name="l23"><span class="ln">23   </span></a>    <span class="s1">logging.basicConfig(</span>
+<a name="l24"><span class="ln">24   </span></a>        <span class="s1">format=</span><span class="s3">&quot;{message}&quot;</span><span class="s0">, </span><span class="s1">style=</span><span class="s3">'{'</span><span class="s0">, </span><span class="s1">handlers=handlers</span><span class="s0">, </span><span class="s1">level=logging.DEBUG)</span>
+<a name="l25"><span class="ln">25   </span></a>    <span class="s1">monkey.patch_func(set_threshold</span><span class="s0">, </span><span class="s1">distutils.log</span><span class="s0">, </span><span class="s3">'set_threshold'</span><span class="s1">)</span>
+<a name="l26"><span class="ln">26   </span></a>
+<a name="l27"><span class="ln">27   </span></a>
+<a name="l28"><span class="ln">28   </span></a><span class="s0">def </span><span class="s1">set_threshold(level):</span>
+<a name="l29"><span class="ln">29   </span></a>    <span class="s1">logging.root.setLevel(level*</span><span class="s4">10</span><span class="s1">)</span>
+<a name="l30"><span class="ln">30   </span></a>    <span class="s0">return </span><span class="s1">set_threshold.unpatched(level)</span>
+<a name="l31"><span class="ln">31   </span></a></pre>
+</body>
+</html>
